@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "user")
 @Data
-public class User {
+public class UserAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -42,12 +42,7 @@ public class User {
             fetch = FetchType.EAGER,
             cascade = CascadeType.PERSIST
     )
-    @JoinTable(
-            name = "user_contact",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "contact_id")
-    )
-    private List<User> contactList = new ArrayList<>();
+    private List<UserAccount> contactList = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "id")
