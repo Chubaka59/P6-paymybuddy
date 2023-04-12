@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Table
 @Data
 public class UserAccount {
     @Id
@@ -28,23 +28,11 @@ public class UserAccount {
     private String password;
 
     @ManyToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.PERSIST
-    )
-    @JoinTable(
-            name = "user_transaction",
-            joinColumns = @JoinColumn(name = "debtor_id"),
-            inverseJoinColumns = @JoinColumn(name = "transaction_id")
-    )
-    private List<Transaction> transactionList = new ArrayList<>();
-
-    @ManyToMany(
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             cascade = CascadeType.PERSIST
     )
     private List<UserAccount> contactList = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "id")
     private Bank bank;
 }
