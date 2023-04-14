@@ -1,9 +1,11 @@
 package com.openclassrooms.paymybuddy.securingweb;
 
 import com.openclassrooms.paymybuddy.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/home").permitAll()
+                        .requestMatchers( "/home", "/register/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
@@ -49,7 +51,6 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/home", true)
                         .usernameParameter("email")
                         .passwordParameter("password")
-
                 )
                 .logout((logout) -> logout.permitAll()
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -67,4 +68,5 @@ public class SecurityConfig {
                 .ignoring()
                 .requestMatchers("/css/**", "/img/**", "/h2-console/**");
     }
+
 }

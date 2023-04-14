@@ -3,6 +3,7 @@ package com.openclassrooms.paymybuddy.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,28 +12,30 @@ import java.util.List;
 @Data
 public class UserAccount {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "firstname")
+    @Column(nullable = false)
     private String firstName;
 
-    @Column(name = "lastname")
+    @Column(nullable = false)
     private String lastName;
 
-    @Column(name = "mail")
-    private String mail;
+    @Column(nullable = false)
+    private String email;
 
-    @Column(name = "password")
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private String bank;
+
+    @Column(nullable = false)
+    private BigDecimal balance = BigDecimal.valueOf(0);
 
     @ManyToMany(
             fetch = FetchType.LAZY,
             cascade = CascadeType.PERSIST
     )
     private List<UserAccount> contactList = new ArrayList<>();
-
-    @OneToOne(cascade = CascadeType.PERSIST)
-    private Bank bank;
 }
