@@ -53,4 +53,9 @@ public class AppController {
     public String showHomePage() {
         return "home";
     }
+
+    @GetMapping(value = "/transaction")
+    public String showTransactionPage() {
+        return "transaction";
+    }
 }

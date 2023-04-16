@@ -2,7 +2,7 @@ package com.openclassrooms.paymybuddy.service.impl;
 
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import com.openclassrooms.paymybuddy.model.UserAccount;
-import com.openclassrooms.paymybuddy.repository.UserRepository;
+import com.openclassrooms.paymybuddy.repository.UserAccountRepository;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,18 +13,18 @@ import java.util.Optional;
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public Iterable<UserAccount> getUsers() {
-        return userRepository.findAll();
+        return userAccountRepository.findAll();
     }
 
     @Override
     public Optional<UserAccount> getUserById(Integer id) {
-        return userRepository.findById(id);
+        return userAccountRepository.findById(id);
     }
 
     @Override
@@ -37,12 +37,12 @@ public class UserAccountServiceImpl implements UserAccountService {
         //encrypt password
         userAccount.setPassword(passwordEncoder.encode(userAccountCreationDto.getPassword()));
 
-        userRepository.save(userAccount);
+        userAccountRepository.save(userAccount);
     }
 
     @Override
     public Optional<UserAccount> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userAccountRepository.findByEmail(email);
     }
 
 
