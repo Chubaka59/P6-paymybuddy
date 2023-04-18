@@ -1,6 +1,8 @@
 package com.openclassrooms.paymybuddy.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Data
 public class UserAccountCreationDto {
