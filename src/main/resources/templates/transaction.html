@@ -45,7 +45,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each = "transaction : ${transaction}">
+        <tr th:each = "transaction : ${#lists.sort(transaction, byDate)}">
             <td th:text = "${transaction.date}"></td>
             <td th:text = "${transaction.debtor}"></td>
             <td th:text = "${transaction.creditor}"></td>
