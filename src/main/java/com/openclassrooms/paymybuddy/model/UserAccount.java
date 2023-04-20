@@ -3,6 +3,7 @@ package com.openclassrooms.paymybuddy.model;
 import com.openclassrooms.paymybuddy.dto.ContactDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.List;
 @Table
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserAccount {
 
     @Id

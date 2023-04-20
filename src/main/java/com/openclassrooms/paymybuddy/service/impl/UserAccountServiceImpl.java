@@ -52,8 +52,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccount addContact(UserAccount userAccount, String email) {
-        Optional<UserAccount> userAccountToAdd = userAccountRepository.findByEmail(userAccount.getEmail());
-        if (userAccountToAdd.isEmpty()){
+        Optional<UserAccount> contactToAdd = userAccountRepository.findByEmail(userAccount.getEmail());
+        if (contactToAdd.isEmpty()){
             throw new UsernameNotFoundException("User not found with email : " + userAccount.getEmail());
         }
 
@@ -63,8 +63,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         }
 
         UserAccount userAccountToUpdate = userAccountOptToUpdate.get();
-        userAccountToUpdate.getContactList().add(userAccountToAdd.get());
-        userAccountRepository.save(userAccountToUpdate);
-        return userAccount;
+        userAccountToUpdate.getContactList().add(contactToAdd.get());
+        return userAccountRepository.save(userAccountToUpdate);
     }
 }

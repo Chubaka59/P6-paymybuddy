@@ -89,14 +89,14 @@ public class AppController {
         }
 
         String email = contactDto.getEmail();
-        Optional<UserAccount> existingUser = userAccountService.findUserByEmail(email);
+        Optional<UserAccount> contact = userAccountService.findUserByEmail(email);
 
-        if (existingUser.isEmpty()) {
+        if (contact.isEmpty()) {
             result.rejectValue("email", null, "There is no account created for the mail : " + email);
             return "contact";
         }
 
-        userAccountService.addContact(existingUser.get(), principal.getName());
+        userAccountService.addContact(contact.get(), principal.getName());
         return "redirect:/contact?success";
     }
 }
