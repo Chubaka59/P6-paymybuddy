@@ -23,13 +23,13 @@ public class TransactionServiceImpl implements TransactionService {
     private UserAccountRepository userAccountRepository;
 
     @Override
-    public List<TransactionDto> findTransactionByUser(String username) {
-        List<Transaction> transactionList = new ArrayList<>();
-        String name = getNameFromUsername(username);
-        transactionList.addAll(findAllByCreditor(name));
-        transactionList.addAll(findAllByDebtor(name));
-        return transactionList.stream()
-                .map(t -> new TransactionDto(t.getDate(), t.getAmount(), t.getDescription(), t.getCreditor(), t.getDebtor()))
+    public List<TransactionDto> findTransactionByUser(String email) {
+       UserAccount connectedUser = userAccountRepository.findByEmail(email)
+                .orElseThrow(()->  new UsernameNotFoundException("User not found with email : " + email));
+
+        return transactionRepository.findAllByDebtorOrCreditorOrderByDateAsc(connectedUser, connectedUser)
+                .stream()
+                .map(TransactionDto::new)
                 .toList();
     }
 

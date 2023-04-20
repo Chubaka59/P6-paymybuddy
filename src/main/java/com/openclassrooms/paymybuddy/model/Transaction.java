@@ -19,7 +19,9 @@ public class Transaction {
 
     private String description;
 
-    private String creditor;
+    @ManyToOne
+    private UserAccount creditor;
 
-    private String debtor;
+    @ManyToOne
+    private UserAccount debtor;
 }

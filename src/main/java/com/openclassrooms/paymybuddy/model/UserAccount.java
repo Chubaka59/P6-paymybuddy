@@ -44,4 +44,19 @@ public class UserAccount {
             cascade = CascadeType.PERSIST
     )
     private List<UserAccount> contactList = new ArrayList<>();
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
+
+    public UserAccount(UserAccountCreationDto userAccountCreationDto){
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        this.setFirstName(userAccountCreationDto.getFirstName());
+        this.setLastName(userAccountCreationDto.getLastName());
+        this.setEmail(userAccountCreationDto.getEmail());
+        this.setBank(userAccountCreationDto.getBank());
+        //encrypt password
+        this.setPassword(passwordEncoder.encode(userAccountCreationDto.getPassword()));
+    }
 }

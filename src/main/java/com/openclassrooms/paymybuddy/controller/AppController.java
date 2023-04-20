@@ -42,15 +42,16 @@ public class AppController {
     public String registration(@Valid @ModelAttribute("user_account")UserAccountCreationDto userAccountCreationDto,
                                BindingResult result,
                                Model model) {
+         if (result.hasErrors()) {
+            model.addAttribute("user_account", userAccountCreationDto);
+            return "register";
+        }
+
         String email = userAccountCreationDto.getEmail();
         Optional<UserAccount> existingUser = userAccountService.findUserByEmail(email);
 
         if (existingUser.isPresent()) {
             result.rejectValue("email", null, "An account already exist with the Email" + email);
-        }
-
-        if (result.hasErrors()) {
-            model.addAttribute("user_account", userAccountCreationDto);
             return "register";
         }
 
