@@ -1,11 +1,13 @@
 package com.openclassrooms.paymybuddy.model;
 
+import com.openclassrooms.paymybuddy.dto.ContactDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
@@ -15,6 +17,7 @@ import java.util.List;
 @Entity
 @Table
 @Data
+@NoArgsConstructor
 public class UserAccount {
 
     @Id

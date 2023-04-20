@@ -19,6 +19,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public UserDetailsService userDetailsService(UserAccountRepository userAccountRepository){
@@ -66,9 +68,6 @@ public class SecurityConfig {
                 .ignoring()
                 .requestMatchers("/css/**", "/img/**", "/h2-console/**");
     }
-
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

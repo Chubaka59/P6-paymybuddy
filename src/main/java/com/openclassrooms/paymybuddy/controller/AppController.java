@@ -1,8 +1,8 @@
 package com.openclassrooms.paymybuddy.controller;
 
+import com.openclassrooms.paymybuddy.dto.ContactDto;
 import com.openclassrooms.paymybuddy.dto.TransactionDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
-import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import com.openclassrooms.paymybuddy.service.TransactionService;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,12 +67,36 @@ public class AppController {
     public String showTransactionPage(Model model, Principal principal) {
         List<TransactionDto> transactionDtoList = transactionService.findTransactionByUser(principal.getName());
         model.addAttribute("transaction", transactionDtoList);
-        model.addAttribute("byDate", Comparator.comparing(TransactionDto::getDate));
         return "transaction";
     }
 
     @GetMapping(value = "/contact")
-    public String showContactPage() {
+    public String showContactPage(Model model, Principal principal) {
+        List<ContactDto> contactDtoList = userAccountService.findContactList(principal.getName());
+        model.addAttribute("contact_list", contactDtoList);
+        model.addAttribute("add_contact", new ContactDto());
         return "contact";
+    }
+
+    @PostMapping("/contact")
+    public String addContact(@Valid @ModelAttribute("add_contact") ContactDto contactDto,
+                             BindingResult result,
+                             Model model,
+                             Principal principal){
+        if (result.hasErrors()) {
+            model.addAttribute("add_contact", contactDto);
+            return "contact";
+        }
+
+        String email = contactDto.getEmail();
+        Optional<UserAccount> existingUser = userAccountService.findUserByEmail(email);
+
+        if (existingUser.isEmpty()) {
+            result.rejectValue("email", null, "There is no account created for the mail : " + email);
+            return "contact";
+        }
+
+        userAccountService.addContact(existingUser.get(), principal.getName());
+        return "redirect:/contact?success";
     }
 }

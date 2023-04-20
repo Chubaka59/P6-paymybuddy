@@ -1,6 +1,5 @@
 package com.openclassrooms.paymybuddy.repository;
 
-import com.openclassrooms.paymybuddy.dto.TransactionDto;
 import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
