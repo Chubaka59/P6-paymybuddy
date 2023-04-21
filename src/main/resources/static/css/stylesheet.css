@@ -3,3 +3,12 @@
     display: flex;
     flex-direction: row;
 }
+.page
+{
+    display: flex;
+    flex-direction: row;
+}
+.pagination
+{
+    margin-left: 5px;
+}

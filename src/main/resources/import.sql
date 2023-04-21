@@ -9,5 +9,6 @@ insert into transaction(ID, DATE, AMOUNT, DESCRIPTION, CREDITOR_ID, DEBTOR_ID) V
 insert into transaction(ID, DATE, AMOUNT, DESCRIPTION, CREDITOR_ID, DEBTOR_ID) VALUES (3, '2023-04-05', 99.99, 'test', 1, 4);
 insert into transaction(ID, DATE, AMOUNT, DESCRIPTION, CREDITOR_ID, DEBTOR_ID) VALUES (4, '2023-04-10', 200, 'test', 1, 5);
 insert into transaction(ID, DATE, AMOUNT, DESCRIPTION, CREDITOR_ID, DEBTOR_ID) VALUES (5, '2023-04-01', 99.99, 'test', 3, 1);
+insert into transaction(ID, DATE, AMOUNT, DESCRIPTION, CREDITOR_ID, DEBTOR_ID) VALUES (6, '2023-04-01', 100.99, 'test', 3, 1);
 
 insert into user_account_contact_list(USER_ACCOUNT_ID, CONTACT_LIST_ID) VALUES (1, 2);

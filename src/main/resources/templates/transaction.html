@@ -45,7 +45,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each = "transaction : ${transaction}">
+        <tr th:each = "transaction : ${transactionDtoPage.content}">
             <td th:text = "${transaction.date}"></td>
             <td th:text = "${transaction.debtor}"></td>
             <td th:text = "${transaction.creditor}"></td>
@@ -54,6 +54,15 @@
         </tr>
         </tbody>
     </table>
+    <div class="page">
+    <div th:if="${transactionDtoPage.totalPages > 0}" class="pagination"
+         th:each="pageNumber : ${pageNumbers}">
+        <a th:href="@{/transaction(size=${transactionDtoPage.size}, page=${pageNumber})}"
+           th:text=${pageNumber}
+           th:class="${pageNumber==transactionDtoPage.number + 1} ? active"
+        class="test"></a>
+    </div>
+    </div>
 </div>
 </body>
 </html>
