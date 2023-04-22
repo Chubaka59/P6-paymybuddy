@@ -1,8 +1,6 @@
 package com.openclassrooms.paymybuddy.controller;
 
-import com.openclassrooms.paymybuddy.dto.ContactDto;
-import com.openclassrooms.paymybuddy.dto.TransactionDto;
-import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
+import com.openclassrooms.paymybuddy.dto.*;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import com.openclassrooms.paymybuddy.service.TransactionService;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -63,17 +62,33 @@ public class AppController {
         return "redirect:/register?success";
     }
 
-    @GetMapping(value = "/home")
-    public String showHomePage() {
-        return "home";
+    @GetMapping(value = "/reload")
+    public String showReloadPage(Model model,
+                                 Principal principal,
+                                 ReloadDto reloadDto) {
+        BigDecimal balance = userAccountService.getBalance(principal.getName());
+        model.addAttribute("reload_amount", reloadDto);
+        model.addAttribute("balance", balance);
+        return "reload";
     }
 
-//    @GetMapping(value = "/transaction")
-//    public String showTransactionPage(Model model, Principal principal) {
-//        List<TransactionDto> transactionDtoList = transactionService.findTransactionByUser(principal.getName());
-//        model.addAttribute("transaction", transactionDtoList);
-//        return "transaction";
-//    }
+    @PostMapping("/reload")
+    public String reload(@Valid @ModelAttribute("reload_amount")ReloadDto reloadDto,
+                         BindingResult result,
+                         Model model,
+                         Principal principal){
+        if (result.hasErrors()) {
+            model.addAttribute("reload_amount", reloadDto);
+            return "reload";
+        }
+        userAccountService.reloadBalance(reloadDto, principal.getName());
+        return "redirect:/reload?success";
+    }
+
+    @GetMapping(value = "/home")
+    public String showHomePage(){
+        return "home";
+    }
 
     @GetMapping(value = "/transaction")
     public String showTransactionPage(Model model,

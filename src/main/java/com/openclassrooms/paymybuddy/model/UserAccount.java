@@ -1,6 +1,7 @@
 package com.openclassrooms.paymybuddy.model;
 
 import com.openclassrooms.paymybuddy.dto.ContactDto;
+import com.openclassrooms.paymybuddy.dto.ReloadDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -42,7 +43,7 @@ public class UserAccount {
     private String bank;
 
     @Column(nullable = false)
-    private BigDecimal balance = BigDecimal.valueOf(0);
+    private BigDecimal balance;
 
     @ManyToMany(
             fetch = FetchType.LAZY,
@@ -63,5 +64,9 @@ public class UserAccount {
         this.setBank(userAccountCreationDto.getBank());
         //encrypt password
         this.setPassword(passwordEncoder.encode(userAccountCreationDto.getPassword()));
+    }
+
+    public void reload(ReloadDto reloadDto){
+       balance = balance.add(reloadDto.getAmount()).setScale(2);
     }
 }

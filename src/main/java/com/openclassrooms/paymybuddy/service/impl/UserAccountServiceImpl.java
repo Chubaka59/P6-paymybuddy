@@ -1,7 +1,9 @@
 package com.openclassrooms.paymybuddy.service.impl;
 
 import com.openclassrooms.paymybuddy.dto.ContactDto;
+import com.openclassrooms.paymybuddy.dto.ReloadDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
+import com.openclassrooms.paymybuddy.dto.UserBalanceDto;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import com.openclassrooms.paymybuddy.repository.UserAccountRepository;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
@@ -10,6 +12,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,5 +68,24 @@ public class UserAccountServiceImpl implements UserAccountService {
         UserAccount userAccountToUpdate = userAccountOptToUpdate.get();
         userAccountToUpdate.getContactList().add(contactToAdd.get());
         return userAccountRepository.save(userAccountToUpdate);
+    }
+
+    @Override
+    public BigDecimal getBalance(String email) {
+        Optional<UserAccount> userAccount = userAccountRepository.findByEmail(email);
+        if (userAccount.isEmpty()) {
+            throw new UsernameNotFoundException("User not found with email : " + email);
+        }
+        return userAccount.get().getBalance();
+    }
+
+    @Override
+    public UserAccount reloadBalance(ReloadDto reloadDto, String email) {
+        Optional<UserAccount> userAccount = userAccountRepository.findByEmail(email);
+        if (userAccount.isEmpty()) {
+            throw new UsernameNotFoundException("User not found with email : " + email);
+        }
+        userAccount.get().reload(reloadDto);
+        return userAccountRepository.save(userAccount.get());
     }
 }

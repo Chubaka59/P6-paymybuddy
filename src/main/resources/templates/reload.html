@@ -4,7 +4,7 @@
 >
 <head>
     <meta charset="UTF-8">
-    <title>Pay My Buddy - Contact</title>
+    <title>Pay My Buddy - Home</title>
     <link href="css/stylesheet.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
           rel="stylesheet"
@@ -15,8 +15,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" th:href="@{/home}">Pay My Buddy</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -32,64 +31,49 @@
         </div>
     </div>
 </nav>
-<br/><br/><br/>
+</br></br></br>
 <div class="container">
     <div class="row col-md-8 offset-md-2">
         <div class="card">
             <div class="card-header">
-                <h2 class="text-center">Contact</h2>
+                <h2 class="text-center">Reload from your bank account</h2>
             </div>
+            </br>
+            <h3 class="text-center">balance : <span th:text="${balance}"></span></h3>
             <div th:if="${param.success}">
                 <div class="alert alert-info">
-                    You have successfully added a contact!
+                    You have successfully reloaded your account!
                 </div>
             </div>
             <div class="card-body">
                 <form
                         method="post"
                         role="form"
-                        th:action="@{/contact}"
-                        th:object="${add_contact}"
+                        th:action="@{/reload}"
+                        th:object="${reload_amount}"
                 >
                     <div class="form-group mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Amount</label>
                         <input
                                 class="form-control"
-                                id="email"
-                                name="email"
-                                placeholder="Enter contact's email"
-                                th:field="*{email}"
+                                id="reload-amount"
+                                name="reload-amount"
+                                placeholder="Enter the amount you would reload"
+                                th:field="*{amount}"
                                 type="text"
                         />
-                        <p th:errors="*{email}" class="text-danger"
-                           th:if="${#fields.hasErrors('email')}"></p>
+                        <p th:errors="*{amount}" class="text-danger"
+                           th:if="${#fields.hasErrors('amount')}"></p>
                     </div>
 
                     <div class="form-group">
-                        <button class="btn btn-primary" type="submit">Add</button>
+                        <button class="btn btn-primary" type="submit">Reload</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    <br/><br/><br/>
-    <div class="row col-md-10">
-        <h2>List of contact</h2>
-    </div>
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each = "contact_list : ${contact_list}">
-            <td th:text = "${contact_list.name}"></td>
-            <td th:text = "${contact_list.email}"></td>
-        </tr>
-        </tbody>
-    </table>
+
 </div>
 </body>
 </html>
