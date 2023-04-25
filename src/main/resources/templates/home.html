@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
->
+      xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Pay My Buddy - Home</title>
@@ -31,5 +31,66 @@
         </div>
     </div>
 </nav>
+</br></br></br>
+<div class="container">
+    <div class="row col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Transfer money</h2>
+            </div>
+            </br>
+            <h3 class="text-center">balance : <span th:text="${balance}"></span></h3>
+            <div th:if="${param.success}">
+                <div class="alert alert-info">
+                    You have successfully sent money!
+                </div>
+            </div>
+            <div class="card-body">
+                <form
+                        method="post"
+                        role="form"
+                        th:action="@{/home}"
+                        th:object="${transfer_money}"
+                >
+                    <div class="form-group mb-3">
+                        <label class="form-label">Amount</label>
+                        <input
+                                class="form-control"
+                                id="amount"
+                                name="amount"
+                                placeholder="Enter the amount you would transfer"
+                                th:field="*{amount}"
+                                type="text"
+                        />
+                        <p th:errors="*{amount}" class="text-danger"
+                           th:if="${#fields.hasErrors('amount')}"></p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Description</label>
+                        <input
+                                class="form-control"
+                                id="description"
+                                name="description"
+                                placeholder="Enter a description for this transfer"
+                                th:field="*{description}"
+                                type="text"
+                        />
+                        <p th:errors="*{description}" class="text-danger"
+                           th:if="${#fields.hasErrors('description')}"></p>
+                    </div>
+                    <div class="form-group mb-3">
+                    <select th:field="*{contactEmail}">
+                        <option value=""> -- select a contact -- </option>
+                        <option th:each="contact_list : ${contact_list}" th:value="${contact_list}" th:text="${contact_list}"></option>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

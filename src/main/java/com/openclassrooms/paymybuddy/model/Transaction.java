@@ -1,5 +1,6 @@
 package com.openclassrooms.paymybuddy.model;
 
+import com.openclassrooms.paymybuddy.dto.TransferMoneyDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,4 +29,12 @@ public class Transaction {
 
     @ManyToOne
     private UserAccount debtor;
+
+    public Transaction(TransferMoneyDto transferMoneyDto, UserAccount creditor, UserAccount debtor){
+        date = LocalDate.now();
+        amount = transferMoneyDto.getAmount();
+        description = transferMoneyDto.getDescription();
+        this.creditor = creditor;
+        this.debtor= debtor;
+    }
 }

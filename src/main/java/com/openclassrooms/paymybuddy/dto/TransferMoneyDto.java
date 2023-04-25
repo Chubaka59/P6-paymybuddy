@@ -6,7 +6,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ReloadDto {
+public class TransferMoneyDto {
+    String contactEmail;
     @Digits(integer = 3, fraction = 2)
     BigDecimal amount;
+    String description;
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -86,8 +87,37 @@ public class AppController {
     }
 
     @GetMapping(value = "/home")
-    public String showHomePage(){
+    public String showHomePage(Model model,
+                               Principal principal,
+                               TransferMoneyDto transferMoneyDto){
+        BigDecimal balance = userAccountService.getBalance(principal.getName());
+        List<ContactDto> contactDtoList = userAccountService.findContactList(principal.getName());
+        List<String> contactEmailList = new ArrayList<>();
+        for (ContactDto contact : contactDtoList  ) {
+            contactEmailList.add(contact.getEmail());
+        }
+        model.addAttribute("transfer_money", transferMoneyDto);
+        model.addAttribute("contact_list", contactEmailList);
+        model.addAttribute("balance", balance);
         return "home";
+    }
+
+    @PostMapping(value = "/home")
+    public String transferMoney(@Valid @ModelAttribute("transfer_money")TransferMoneyDto transferMoneyDto,
+                                Model model,
+                                BindingResult result,
+                                Principal principal){
+        if (result.hasErrors()) {
+            model.addAttribute("transfer_money", transferMoneyDto);
+            return "home";
+        }
+        if (userAccountService.hasNotEnoughBalance(transferMoneyDto.getAmount(), principal.getName())) {
+            result.rejectValue("amount", null, "There is not enough on your account to transfer " + transferMoneyDto.getAmount() + ". Please reload your account.");
+            model.addAttribute("transfer_money", transferMoneyDto);
+            return "home";
+        }
+        userAccountService.transferMoney(transferMoneyDto, principal.getName());
+        return "redirect:/home?success";
     }
 
     @GetMapping(value = "/transaction")

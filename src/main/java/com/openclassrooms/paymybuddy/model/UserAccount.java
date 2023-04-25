@@ -1,14 +1,11 @@
 package com.openclassrooms.paymybuddy.model;
 
-import com.openclassrooms.paymybuddy.dto.ContactDto;
 import com.openclassrooms.paymybuddy.dto.ReloadDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -68,5 +65,9 @@ public class UserAccount {
 
     public void reload(ReloadDto reloadDto){
        balance = balance.add(reloadDto.getAmount()).setScale(2);
+    }
+
+    public void updateBalance(BigDecimal amount){
+        setBalance(balance.add(amount));
     }
 }
