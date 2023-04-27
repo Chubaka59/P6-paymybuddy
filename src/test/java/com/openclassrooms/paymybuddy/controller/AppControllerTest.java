@@ -1,8 +1,8 @@
 package com.openclassrooms.paymybuddy.controller;
 
-import com.openclassrooms.paymybuddy.dto.ContactDto;
-import com.openclassrooms.paymybuddy.dto.TransactionDto;
-import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
+import com.openclassrooms.paymybuddy.dto.*;
+import com.openclassrooms.paymybuddy.exception.UsernameAlreadyExistException;
+import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import com.openclassrooms.paymybuddy.service.TransactionService;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
@@ -10,16 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -68,8 +69,6 @@ public class AppControllerTest {
     @Test
     public void registrationTest(){
         //GIVEN we will succeed to register a new user
-        when(userAccountService.findUserByEmail(anyString())).thenReturn(Optional.empty());
-
         UserAccountCreationDto userAccountCreationDto = new UserAccountCreationDto();
         userAccountCreationDto.setLastName("test");
         userAccountCreationDto.setFirstName("test");
@@ -79,7 +78,7 @@ public class AppControllerTest {
 
         String expectedString = "redirect:/register?success";
 
-        doNothing().when(userAccountService).saveUserAccount(userAccountCreationDto);
+        when(userAccountService.saveUserAccount(userAccountCreationDto)).thenReturn(new UserAccount());
 
         //WHEN we call the registration page
         String actualString = appController.registration(userAccountCreationDto, result, model);
@@ -114,8 +113,6 @@ public class AppControllerTest {
     @Test
     public void registrationWhenUserAlreadyExistTest(){
         //GIVEN the account already exist
-        when(userAccountService.findUserByEmail(anyString())).thenReturn(Optional.of(new UserAccount()));
-
         UserAccountCreationDto userAccountCreationDto = new UserAccountCreationDto();
         userAccountCreationDto.setLastName("test");
         userAccountCreationDto.setFirstName("test");
@@ -123,14 +120,70 @@ public class AppControllerTest {
         userAccountCreationDto.setBank("test");
         userAccountCreationDto.setPassword("test");
 
+        when(userAccountService.saveUserAccount(userAccountCreationDto)).thenThrow(new UsernameAlreadyExistException("test"));
+
         String expectedString = "register";
 
         //WHEN we call the registration page
         String actualString = appController.registration(userAccountCreationDto, result, model);
 
         //THEN the success page is returned
-        verify(result, times(1)).rejectValue("email", null, "An account already exist with the Email" + userAccountCreationDto.getEmail());
+        verify(result, times(1)).rejectValue("email", null, "An account already exist with the email : " + userAccountCreationDto.getEmail());
         assertEquals(expectedString, actualString);
+    }
+
+    @Test
+    public void showBankPageTest(){
+        //GIVEN we expect to get the bank page
+        String expectedString = "bank";
+
+        //WHEN we call this page
+        String actualString = appController.showBankPage(model, principal, new BankDto());
+
+        //THEN we get the correct page
+        assertEquals(expectedString, actualString);
+    }
+
+    @Test
+    public void bankTest(){
+        //GIVEN we will success to transfer money from the bank
+        when(result.hasErrors()).thenReturn(false);
+        when(userAccountService.bankTransfer(any(BankDto.class), anyString())).thenReturn(new UserAccount());
+        String expectedString = "redirect:/bank?success";
+
+        //WHEN we call the method
+        String actualString = appController.bank(new BankDto(), result, model, principal);
+
+        //THEN the correct String is returned
+        assertEquals(expectedString, actualString);
+    }
+
+    @Test
+    public void bankWhenErrorInTheFormTest(){
+        //GIVEN there is an error in the form
+        when(result.hasErrors()).thenReturn(true);
+        String expectedString = "bank";
+
+        //WHEN we call the method
+        String actualString = appController.bank(new BankDto(), result, model, principal);
+
+        //THEN the correct model and string is called
+        assertEquals(expectedString, actualString);
+        verify(model, times(1)).addAttribute("transfer_amount", new BankDto());
+        verify(model, times(1)).addAttribute("balance", null);
+    }
+
+    @Test
+    public void bankWhenErrorIsThrewTest(){
+        when(result.hasErrors()).thenReturn(false);
+        when(principal.getName()).thenReturn("test");
+        when(userAccountService.bankTransfer(new BankDto(), "test")).thenThrow(new UsernameNotFoundException("test"));
+        String expectedString = "bank";
+
+        String actualString = appController.bank(new BankDto(), result, model, principal);
+
+        assertEquals(expectedString, actualString);
+        verify(result, times(1)).rejectValue("amount", null, "test");
     }
 
     @Test
@@ -139,26 +192,68 @@ public class AppControllerTest {
         String expectedString= "home";
 
         //WHEN we call this page
-        String actualString = appController.showHomePage();
+        String actualString = appController.showHomePage(model, principal, new TransferMoneyDto());
 
         //THEN we get the correct page
         assertEquals(expectedString, actualString);
     }
 
     @Test
-    public void showTransactionPageTest(){
-        //GIVEN we expect to get the home page
-        String expectedString= "transaction";
-        TransactionDto existingTransaction = new TransactionDto(LocalDate.now(), new BigDecimal(2), "testdesc", "testcred", "testdeb");
+    public void transferMoneyTest(){
+        //GIVEN we would succeed to transfer money
+        when(principal.getName()).thenReturn("test");
+        when(userAccountService.transferMoney(new TransferMoneyDto(), "test")).thenReturn(new Transaction());
+        String expectedString = "redirect:/home?success";
 
-        when(transactionService.findTransactionByUser(principal.getName())).thenReturn(List.of(existingTransaction));
+        //WHEn we call the method
+        String actualString = appController.transferMoney(new TransferMoneyDto(), result, model, principal);
 
-        //WHEN we call this page
-        String actualString = appController.showTransactionPage(model, principal);
-
-        //THEN we get the correct page
-        verify(model, times(1)).addAttribute("transaction", List.of(existingTransaction));
+        //THEN the correct method is called and the correct string is returned
         assertEquals(expectedString, actualString);
+        verify(userAccountService, times(1)).transferMoney(new TransferMoneyDto(), "test");
+    }
+
+    @Test
+    public void transferMoneyWhenFormHasErrorTest(){
+        //GIVEN the form will return an error
+        when(result.hasErrors()).thenReturn(true);
+        String expectedString = "home";
+
+        //WHEN we call the method
+        String actualString = appController.transferMoney(new TransferMoneyDto(), result, model, principal);
+
+        //THEN
+        assertEquals(expectedString, actualString);
+        verify(model, times(2)).addAttribute("transfer_money", new TransferMoneyDto());
+    }
+
+    @Test
+    public void transferMoneyWhenErrorIsThrewTest(){
+        when(principal.getName()).thenReturn("test");
+        when(userAccountService.transferMoney(new TransferMoneyDto(), "test")).thenThrow(new UsernameNotFoundException("test"));
+        String expectedString = "home";
+
+        String actualString = appController.transferMoney(new TransferMoneyDto(), result, model, principal);
+
+        assertEquals(expectedString, actualString);
+        verify(model, times(1)).addAttribute("message_error", "test");
+    }
+
+    @Test
+    public void showTransactionPageTest(){
+        //GIVEN we would get the transaction page with the transactionList
+        TransactionDto transactionDto = new TransactionDto(LocalDate.now(), BigDecimal.ONE, "test", "test", "test");
+        Page<TransactionDto> transactionDtoPage = new PageImpl(List.of(transactionDto), PageRequest.of(1,5), 1);
+        when(principal.getName()).thenReturn("test");
+        when(transactionService.findPaginated(PageRequest.of(0,5), "test")).thenReturn(transactionDtoPage);
+        String expectedString = "transaction";
+
+        //WHEN we call the method
+        String actualString = appController.showTransactionPage(model, principal, 1, 5);
+
+        //THEN we get the correct string and the pagination
+        assertEquals(expectedString, actualString);
+        verify(model, times(1)).addAttribute("pageNumbers", List.of(1,2));
     }
 
     @Test
@@ -176,22 +271,17 @@ public class AppControllerTest {
     @Test
     public void addContactTest(){
         //GIVEN there is a contact to add
-        UserAccount contactUserAccount = new UserAccount(1, "existingtestuser", "existingtestuser", "existingtestuser", "existingtestuser", "existingtestuser", BigDecimal.valueOf(0), List.of());
-        Optional<UserAccount> contact = Optional.of(contactUserAccount);
-        UserAccount userAccount = new UserAccount(2, "test", "test", "testmail", "test", "test", BigDecimal.valueOf(0), List.of());
-        ContactDto contactDto = new ContactDto("existingtestuser", "existingtestuser");
-        when(userAccountService.findUserByEmail(anyString())).thenReturn(contact);
-        when(userAccountService.addContact(contact.get(), "testmail")).thenReturn(userAccount);
-        when(principal.getName()).thenReturn("testmail");
-
+        ContactDto contactDto = new ContactDto("test", "test");
+        when(userAccountService.addContact(contactDto, "test")).thenReturn(new UserAccount());
         String expectedString = "redirect:/contact?success";
+        when(principal.getName()).thenReturn("test");
 
         //WHEN we try to add a contact
         String actualString = appController.addContact(contactDto, result, model, principal);
 
         //THEN the correct string is returned  and the addContact method is called
-        verify(userAccountService, times(1)).addContact(contact.get(), "testmail");
         assertEquals(expectedString, actualString);
+        verify(userAccountService, times(1)).addContact(contactDto, "test");
     }
 
     @Test
@@ -199,28 +289,34 @@ public class AppControllerTest {
         //GIVEN there is an error in the form
         when(result.hasErrors()).thenReturn(true);
         String expectedString = "contact";
+        ContactDto contactDto = new ContactDto("test", "test");
+        when(principal.getName()).thenReturn("test");
+        when(userAccountService.findContactList("test")).thenReturn(List.of(contactDto));
 
         //WHEN we try to add a contact
         String  actualString = appController.addContact(new ContactDto(), result, model, principal);
 
         //THEN we are redirected on the contact page
         verify(model, times(1)).addAttribute("add_contact", new ContactDto());
+        verify(model, times(1)).addAttribute("contact_list", List.of(contactDto));
         assertEquals(expectedString, actualString);
     }
 
     @Test
-    public void addContactWhenContactIsNotFound(){
-        //GIVEN the contact we try to add is not found
-        when(userAccountService.findUserByEmail(anyString())).thenReturn(Optional.empty());
-        ContactDto contactDto = new ContactDto();
-
+    public void addContactWhenErrorIsThrewTest(){
+        //GIVEN an error is threw
+        ContactDto contactDto = new ContactDto("test", "test");
+        when(userAccountService.addContact(contactDto, "test")).thenThrow(new UsernameNotFoundException("test"));
         String expectedString = "contact";
+        when(principal.getName()).thenReturn("test");
+        when(userAccountService.findContactList("test")).thenReturn(List.of(contactDto));
 
-        //WHEN we try to add the contact
-        String actualString = appController.addContact(contactDto, result, model, principal);
+        //WHEN the method is called
+        String  actualString = appController.addContact(contactDto, result, model, principal);
 
-        //THEN the result is rejected
-        verify(result, times(1)).rejectValue("email", null, "There is no account created for the mail : " + contactDto.getEmail());
+        //THEN the correct String is returned and with the correct model
         assertEquals(expectedString, actualString);
+        verify(model, times(1)).addAttribute("message_error", "test");
+        verify(model, times(1)).addAttribute("contact_list", List.of(contactDto));
     }
 }

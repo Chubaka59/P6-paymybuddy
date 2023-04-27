@@ -54,7 +54,7 @@ public class AppController {
             userAccountService.saveUserAccount(userAccountCreationDto);
             return "redirect:/register?success";
         } catch (Exception e) {
-            result.rejectValue("email", null, "An account already exist with the email " + userAccountCreationDto.getEmail());
+            result.rejectValue("email", null, "An account already exist with the email : " + userAccountCreationDto.getEmail());
             return "register";
         }
     }
@@ -138,8 +138,6 @@ public class AppController {
                     .collect(Collectors.toList());
             model.addAttribute("pageNumbers", pageNumbers);
         }
-
-
         return "transaction";
     }
 
@@ -156,15 +154,12 @@ public class AppController {
                              Model model,
                              Principal principal){
         if (result.hasErrors()) {
-            model.addAttribute("add_contact", contactDto);
-            model.addAttribute("contact_list", userAccountService.findContactList(principal.getName()));
-            return "contact";
+            return showContactPage(model, principal);
         }
         try {
             userAccountService.addContact(contactDto, principal.getName());
         } catch (Exception e) {
             model.addAttribute("message_error", e.getMessage());
-            model.addAttribute("contact_list", userAccountService.findContactList(principal.getName()));
             return showContactPage(model, principal);
         }
 

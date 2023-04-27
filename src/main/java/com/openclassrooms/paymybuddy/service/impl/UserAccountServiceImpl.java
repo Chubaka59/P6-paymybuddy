@@ -24,13 +24,13 @@ public class UserAccountServiceImpl implements UserAccountService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public void saveUserAccount(UserAccountCreationDto userAccountCreationDto) {
+    public UserAccount saveUserAccount(UserAccountCreationDto userAccountCreationDto) {
         Optional<UserAccount> existingUser = findUserByEmail(userAccountCreationDto.getEmail());
         if (existingUser.isPresent()){
             throw new UsernameAlreadyExistException(userAccountCreationDto.getEmail());
         }
         UserAccount userAccount = new UserAccount(userAccountCreationDto);
-        userAccountRepository.save(userAccount);
+        return userAccountRepository.save(userAccount);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     @Transactional
-    public void transferMoney(TransferMoneyDto transferMoneyDto, String email) {
+    public Transaction transferMoney(TransferMoneyDto transferMoneyDto, String email) {
         final UserAccount debtor = findUserByEmail(transferMoneyDto.getContactEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Contact not found with email : "+ transferMoneyDto.getContactEmail()))
                 .creditBalance(transferMoneyDto.getAmount());
@@ -89,16 +89,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
         userAccountRepository.save(creditor);
         userAccountRepository.save(debtor);
-        transactionRepository.save(transaction);
-    }
-
-    @Override
-    public boolean hasNotEnoughBalance(BigDecimal amount, String email) {
-        Optional<UserAccount> userAccount = userAccountRepository.findByEmail(email);
-        if (userAccount.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email : " + email);
-        }
-        int result = amount.compareTo(userAccount.get().getBalance());
-        return result > 0 ;
+        return transactionRepository.save(transaction);
     }
 }

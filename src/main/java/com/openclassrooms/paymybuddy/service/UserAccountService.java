@@ -4,6 +4,7 @@ import com.openclassrooms.paymybuddy.dto.ContactDto;
 import com.openclassrooms.paymybuddy.dto.BankDto;
 import com.openclassrooms.paymybuddy.dto.TransferMoneyDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
+import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 public interface UserAccountService {
 
-    void saveUserAccount(UserAccountCreationDto userAccountDto);
+    UserAccount saveUserAccount(UserAccountCreationDto userAccountDto);
 
     Optional<UserAccount> findUserByEmail(String email);
 
@@ -24,5 +25,5 @@ public interface UserAccountService {
 
     UserAccount bankTransfer(BankDto bankDto, String name);
 
-    void transferMoney(TransferMoneyDto transferMoneyDto, String email);
+    Transaction transferMoney(TransferMoneyDto transferMoneyDto, String email);
 }
