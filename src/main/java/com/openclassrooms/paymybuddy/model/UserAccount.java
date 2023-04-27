@@ -70,4 +70,33 @@ public class UserAccount {
     public void updateBalance(BigDecimal amount){
         setBalance(balance.add(amount));
     }
+
+    public UserAccount creditBalance(BigDecimal amount){
+        if (balance.add(amount).compareTo(BigDecimal.ZERO) < 0){
+            throw new RuntimeException("The balance is insufficient");
+        }
+        setBalance(balance.add(amount));
+        return this;
+    }
+
+    public UserAccount debitBalance(BigDecimal amount){
+        if(amount.compareTo(BigDecimal.ZERO) <= 0 ){
+            throw new RuntimeException("Amount can not be equal less then 0");
+        }
+
+        //calculate transfer fee of 0.5% = ( amount * 0.5 / 100)
+        BigDecimal fee = amount.multiply(BigDecimal.valueOf(0.005));
+
+        if(balance.compareTo(amount.add(fee)) < 0 ) {
+            throw new RuntimeException("The balance is insufficient");
+        }
+        balance = balance.subtract(amount.add(fee));
+
+        return this;
+    }
+
+    public UserAccount addContact(UserAccount userAccount){
+        contactList.add(userAccount);
+        return this;
+    }
 }

@@ -31,6 +31,10 @@ public class Transaction {
     private UserAccount debtor;
 
     public Transaction(TransferMoneyDto transferMoneyDto, UserAccount creditor, UserAccount debtor){
+        if(transferMoneyDto.getAmount().compareTo(BigDecimal.ZERO) <= 0 ){
+            throw new RuntimeException("Amount can not be equal less then 0");
+        }
+
         date = LocalDate.now();
         amount = transferMoneyDto.getAmount();
         description = transferMoneyDto.getDescription();

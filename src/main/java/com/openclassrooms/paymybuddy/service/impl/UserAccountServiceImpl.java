@@ -22,16 +22,6 @@ public class UserAccountServiceImpl implements UserAccountService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public Iterable<UserAccount> getUsers() {
-        return userAccountRepository.findAll();
-    }
-
-    @Override
-    public Optional<UserAccount> getUserById(Integer id) {
-        return userAccountRepository.findById(id);
-    }
-
-    @Override
     public void saveUserAccount(UserAccountCreationDto userAccountCreationDto) {
         UserAccount userAccount = new UserAccount(userAccountCreationDto);
         userAccountRepository.save(userAccount);
@@ -91,14 +81,17 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public void transferMoney(TransferMoneyDto transferMoneyDto, String email) {
-        Optional<UserAccount> creditor = findUserByEmail(email);
-        Optional<UserAccount> debtor = findUserByEmail(transferMoneyDto.getContactEmail());
+        final UserAccount debtor = findUserByEmail(transferMoneyDto.getContactEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Contact not found with email : "+ transferMoneyDto.getContactEmail()))
+                .creditBalance(transferMoneyDto.getAmount());
+        final UserAccount creditor = findUserByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Account not found with email : " + email))
+                .debitBalance(transferMoneyDto.getAmount());
 
-        Transaction transaction = new Transaction(transferMoneyDto, creditor.get(), debtor.get());
-        creditor.get().updateBalance(transaction.getAmount().negate());
-        debtor.get().updateBalance(transaction.getAmount());
-        userAccountRepository.save(creditor.get());
-        userAccountRepository.save(debtor.get());
+        Transaction transaction = new Transaction(transferMoneyDto, creditor, debtor);
+
+        userAccountRepository.save(creditor);
+        userAccountRepository.save(debtor);
         transactionRepository.save(transaction);
     }
 
