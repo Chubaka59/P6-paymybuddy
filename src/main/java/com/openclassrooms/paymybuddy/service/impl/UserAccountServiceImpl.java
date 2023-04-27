@@ -1,6 +1,7 @@
 package com.openclassrooms.paymybuddy.service.impl;
 
 import com.openclassrooms.paymybuddy.dto.*;
+import com.openclassrooms.paymybuddy.exception.UsernameAlreadyExistException;
 import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
 import com.openclassrooms.paymybuddy.repository.TransactionRepository;
@@ -9,6 +10,7 @@ import com.openclassrooms.paymybuddy.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,6 +25,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public void saveUserAccount(UserAccountCreationDto userAccountCreationDto) {
+        Optional<UserAccount> existingUser = findUserByEmail(userAccountCreationDto.getEmail());
+        if (existingUser.isPresent()){
+            throw new UsernameAlreadyExistException(userAccountCreationDto.getEmail());
+        }
         UserAccount userAccount = new UserAccount(userAccountCreationDto);
         userAccountRepository.save(userAccount);
     }
@@ -44,42 +50,33 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public UserAccount addContact(UserAccount userAccount, String email) {
-        Optional<UserAccount> contactToAdd = userAccountRepository.findByEmail(userAccount.getEmail());
-        if (contactToAdd.isEmpty()){
-            throw new UsernameNotFoundException("User not found with email : " + userAccount.getEmail());
-        }
+    public UserAccount addContact(ContactDto contactDto, String email) {
+        UserAccount contactToAdd = userAccountRepository.findByEmail(contactDto.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email : " + contactDto.getEmail()));
 
-        Optional<UserAccount> userAccountOptToUpdate = userAccountRepository.findByEmail(email);
-        if (userAccountOptToUpdate.isEmpty()){
-            throw new UsernameNotFoundException("User not found with email : " + email);
-        }
-
-        UserAccount userAccountToUpdate = userAccountOptToUpdate.get();
-        userAccountToUpdate.getContactList().add(contactToAdd.get());
+        UserAccount userAccountToUpdate = userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email : " + email))
+                .addContact(contactToAdd);
         return userAccountRepository.save(userAccountToUpdate);
     }
 
     @Override
     public BigDecimal getBalance(String email) {
-        Optional<UserAccount> userAccount = userAccountRepository.findByEmail(email);
-        if (userAccount.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email : " + email);
-        }
-        return userAccount.get().getBalance();
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Account not found with email : " + email))
+                .getBalance();
     }
 
     @Override
-    public UserAccount reloadBalance(ReloadDto reloadDto, String email) {
-        Optional<UserAccount> userAccount = userAccountRepository.findByEmail(email);
-        if (userAccount.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email : " + email);
-        }
-        userAccount.get().reload(reloadDto);
-        return userAccountRepository.save(userAccount.get());
+    public UserAccount bankTransfer(BankDto bankDto, String email) {
+        final UserAccount userAccount = findUserByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email))
+                .creditBalance(bankDto.getAmount());
+        return userAccountRepository.save(userAccount);
     }
 
     @Override
+    @Transactional
     public void transferMoney(TransferMoneyDto transferMoneyDto, String email) {
         final UserAccount debtor = findUserByEmail(transferMoneyDto.getContactEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Contact not found with email : "+ transferMoneyDto.getContactEmail()))

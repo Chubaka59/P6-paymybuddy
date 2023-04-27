@@ -21,10 +21,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/home}">home</a>
-                    <a class="nav-link active" aria-current="page" th:href="@{/reload}">reload</a>
-                    <a class="nav-link active" aria-current="page" th:href="@{/transaction}">transaction</a>
-                    <a class="nav-link active" aria-current="page" th:href="@{/contact}">contact</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/home}">Home</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/bank}">Bank</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/transaction}">Transaction</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/contact}">Contact</a>
                     <a class="nav-link active" aria-current="page" th:href="@{/logout}">Logout</a>
                 </li>
             </ul>
@@ -36,29 +36,31 @@
     <div class="row col-md-8 offset-md-2">
         <div class="card">
             <div class="card-header">
-                <h2 class="text-center">Reload from your bank account</h2>
+                <h2 class="text-center">Transfer from/to your bank account</h2>
             </div>
             </br>
             <h3 class="text-center">balance : <span th:text="${balance}"></span></h3>
             <div th:if="${param.success}">
                 <div class="alert alert-info">
-                    You have successfully reloaded your account!
+                    You have successfully transferred the amount!
                 </div>
             </div>
             <div class="card-body">
+                <p>Specify "-XX" if you would credit your bank account</p>
+                <p>For example, -20 if you want to credit 20€</p>
                 <form
                         method="post"
                         role="form"
-                        th:action="@{/reload}"
-                        th:object="${reload_amount}"
+                        th:action="@{/bank}"
+                        th:object="${transfer_amount}"
                 >
                     <div class="form-group mb-3">
                         <label class="form-label">Amount</label>
                         <input
                                 class="form-control"
-                                id="reload-amount"
-                                name="reload-amount"
-                                placeholder="Enter the amount you would reload"
+                                id="transfer-amount"
+                                name="transfer-amount"
+                                placeholder="Enter the amount you would transfer"
                                 th:field="*{amount}"
                                 type="text"
                         />
@@ -67,7 +69,7 @@
                     </div>
 
                     <div class="form-group">
-                        <button class="btn btn-primary" type="submit">Reload</button>
+                        <button class="btn btn-primary" type="submit">Transfer</button>
                     </div>
                 </form>
             </div>

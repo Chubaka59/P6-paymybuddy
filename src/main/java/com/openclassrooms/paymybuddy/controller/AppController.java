@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,39 +50,45 @@ public class AppController {
             return "register";
         }
 
-        String email = userAccountCreationDto.getEmail();
-        Optional<UserAccount> existingUser = userAccountService.findUserByEmail(email);
-
-        if (existingUser.isPresent()) {
-            result.rejectValue("email", null, "An account already exist with the Email" + email);
+        try {
+            userAccountService.saveUserAccount(userAccountCreationDto);
+            return "redirect:/register?success";
+        } catch (Exception e) {
+            result.rejectValue("email", null, "An account already exist with the email " + userAccountCreationDto.getEmail());
             return "register";
         }
-
-        userAccountService.saveUserAccount(userAccountCreationDto);
-        return "redirect:/register?success";
     }
 
-    @GetMapping(value = "/reload")
-    public String showReloadPage(Model model,
-                                 Principal principal,
-                                 ReloadDto reloadDto) {
+    @GetMapping(value = "/bank")
+    public String showBankPage(Model model,
+                               Principal principal,
+                               BankDto bankDto) {
         BigDecimal balance = userAccountService.getBalance(principal.getName());
-        model.addAttribute("reload_amount", reloadDto);
+        model.addAttribute("transfer_amount", bankDto);
         model.addAttribute("balance", balance);
-        return "reload";
+        return "bank";
     }
 
-    @PostMapping("/reload")
-    public String reload(@Valid @ModelAttribute("reload_amount")ReloadDto reloadDto,
-                         BindingResult result,
-                         Model model,
-                         Principal principal){
+    @PostMapping("/bank")
+    public String bank(@Valid @ModelAttribute("transfer_amount") BankDto bankDto,
+                       BindingResult result,
+                       Model model,
+                       Principal principal){
+        BigDecimal balance = userAccountService.getBalance(principal.getName());
         if (result.hasErrors()) {
-            model.addAttribute("reload_amount", reloadDto);
-            return "reload";
+            model.addAttribute("transfer_amount", bankDto);
+            model.addAttribute("balance", balance);
+            return "bank";
         }
-        userAccountService.reloadBalance(reloadDto, principal.getName());
-        return "redirect:/reload?success";
+        try {
+            userAccountService.bankTransfer(bankDto, principal.getName());
+            return "redirect:/bank?success";
+        } catch (Exception e) {
+            model.addAttribute("transfer_amount", bankDto);
+            model.addAttribute("balance", balance);
+            result.rejectValue("amount", null, e.getMessage());
+            return "bank";
+        }
     }
 
     @GetMapping(value = "/home")
@@ -92,42 +97,35 @@ public class AppController {
                                TransferMoneyDto transferMoneyDto){
         BigDecimal balance = userAccountService.getBalance(principal.getName());
         List<ContactDto> contactDtoList = userAccountService.findContactList(principal.getName());
-        List<String> contactEmailList = new ArrayList<>();
-        for (ContactDto contact : contactDtoList  ) {
-            contactEmailList.add(contact.getEmail());
-        }
         model.addAttribute("transfer_money", transferMoneyDto);
-        model.addAttribute("contact_list", contactEmailList);
+        model.addAttribute("contact_list", contactDtoList);
         model.addAttribute("balance", balance);
         return "home";
     }
 
     @PostMapping(value = "/home")
     public String transferMoney(@Valid @ModelAttribute("transfer_money")TransferMoneyDto transferMoneyDto,
-                                Model model,
                                 BindingResult result,
+                                Model model,
                                 Principal principal){
         if (result.hasErrors()) {
             model.addAttribute("transfer_money", transferMoneyDto);
-            return "home";
+            return showHomePage(model, principal, transferMoneyDto);
         }
-        if (userAccountService.hasNotEnoughBalance(transferMoneyDto.getAmount(), principal.getName())) {
-            result.rejectValue("amount", null, "There is not enough on your account to transfer " + transferMoneyDto.getAmount() + ". Please reload your account.");
-            model.addAttribute("transfer_money", transferMoneyDto);
-            return "home";
+        try{
+            userAccountService.transferMoney(transferMoneyDto, principal.getName());
+        }catch (Exception e){
+            model.addAttribute("message_error", e.getMessage());
+            return showHomePage(model, principal, transferMoneyDto);
         }
-        userAccountService.transferMoney(transferMoneyDto, principal.getName());
         return "redirect:/home?success";
     }
 
     @GetMapping(value = "/transaction")
     public String showTransactionPage(Model model,
                                       Principal principal,
-                                      @RequestParam("page") Optional<Integer> page,
-                                      @RequestParam("size") Optional<Integer> size) {
-
-        int currentPage = page.orElse(1);
-        int pageSize = size.orElse(5);
+                                      @RequestParam(name = "page", required = false, defaultValue = "1") Integer currentPage,
+                                      @RequestParam(name = "size", required = false, defaultValue = "5") Integer pageSize) {
 
         Page<TransactionDto> transactionDtoPage = transactionService.findPaginated(PageRequest.of(currentPage - 1, pageSize), principal.getName());
 
@@ -147,8 +145,7 @@ public class AppController {
 
     @GetMapping(value = "/contact")
     public String showContactPage(Model model, Principal principal) {
-        List<ContactDto> contactDtoList = userAccountService.findContactList(principal.getName());
-        model.addAttribute("contact_list", contactDtoList);
+        model.addAttribute("contact_list", userAccountService.findContactList(principal.getName()));
         model.addAttribute("add_contact", new ContactDto());
         return "contact";
     }
@@ -160,18 +157,17 @@ public class AppController {
                              Principal principal){
         if (result.hasErrors()) {
             model.addAttribute("add_contact", contactDto);
+            model.addAttribute("contact_list", userAccountService.findContactList(principal.getName()));
             return "contact";
         }
-
-        String email = contactDto.getEmail();
-        Optional<UserAccount> contact = userAccountService.findUserByEmail(email);
-
-        if (contact.isEmpty()) {
-            result.rejectValue("email", null, "There is no account created for the mail : " + email);
-            return "contact";
+        try {
+            userAccountService.addContact(contactDto, principal.getName());
+        } catch (Exception e) {
+            model.addAttribute("message_error", e.getMessage());
+            model.addAttribute("contact_list", userAccountService.findContactList(principal.getName()));
+            return showContactPage(model, principal);
         }
 
-        userAccountService.addContact(contact.get(), principal.getName());
         return "redirect:/contact?success";
     }
 }
