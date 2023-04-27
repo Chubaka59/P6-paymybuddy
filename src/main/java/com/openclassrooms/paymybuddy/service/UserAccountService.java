@@ -1,7 +1,7 @@
 package com.openclassrooms.paymybuddy.service;
 
 import com.openclassrooms.paymybuddy.dto.ContactDto;
-import com.openclassrooms.paymybuddy.dto.ReloadDto;
+import com.openclassrooms.paymybuddy.dto.BankDto;
 import com.openclassrooms.paymybuddy.dto.TransferMoneyDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import com.openclassrooms.paymybuddy.model.UserAccount;
@@ -18,13 +18,11 @@ public interface UserAccountService {
 
     List<ContactDto> findContactList(String email);
 
-    UserAccount addContact(UserAccount userAccount, String email);
+    UserAccount addContact(ContactDto contactDto, String email);
 
     BigDecimal getBalance(String email);
 
-    UserAccount reloadBalance(ReloadDto reloadDto, String name);
+    UserAccount bankTransfer(BankDto bankDto, String name);
 
     void transferMoney(TransferMoneyDto transferMoneyDto, String email);
-
-    boolean hasNotEnoughBalance(BigDecimal amount, String email);
 }

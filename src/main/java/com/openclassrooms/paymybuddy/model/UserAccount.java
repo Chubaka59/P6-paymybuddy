@@ -1,6 +1,6 @@
 package com.openclassrooms.paymybuddy.model;
 
-import com.openclassrooms.paymybuddy.dto.ReloadDto;
+import com.openclassrooms.paymybuddy.dto.BankDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,8 +39,7 @@ public class UserAccount {
     @Column(nullable = false)
     private String bank;
 
-    @Column(nullable = false)
-    private BigDecimal balance;
+    private BigDecimal balance = BigDecimal.valueOf(0);
 
     @ManyToMany(
             fetch = FetchType.LAZY,
@@ -63,8 +62,8 @@ public class UserAccount {
         this.setPassword(passwordEncoder.encode(userAccountCreationDto.getPassword()));
     }
 
-    public void reload(ReloadDto reloadDto){
-       balance = balance.add(reloadDto.getAmount()).setScale(2);
+    public void reload(BankDto bankDto){
+       balance = balance.add(bankDto.getAmount()).setScale(2);
     }
 
     public void updateBalance(BigDecimal amount){
