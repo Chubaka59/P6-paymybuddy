@@ -9,6 +9,8 @@ import com.openclassrooms.paymybuddy.repository.UserAccountRepository;
 import com.openclassrooms.paymybuddy.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,8 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (existingUser.isPresent()){
             throw new UsernameAlreadyExistException(userAccountCreationDto.getEmail());
         }
-        UserAccount userAccount = new UserAccount(userAccountCreationDto);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        UserAccount userAccount = new UserAccount(userAccountCreationDto, passwordEncoder);
         return userAccountRepository.save(userAccount);
     }
 

@@ -51,9 +51,7 @@ public class UserAccount {
         return this.firstName + " " + this.lastName;
     }
 
-    public UserAccount(UserAccountCreationDto userAccountCreationDto){
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
+    public UserAccount(UserAccountCreationDto userAccountCreationDto, PasswordEncoder passwordEncoder){
         this.setFirstName(userAccountCreationDto.getFirstName());
         this.setLastName(userAccountCreationDto.getLastName());
         this.setEmail(userAccountCreationDto.getEmail());
