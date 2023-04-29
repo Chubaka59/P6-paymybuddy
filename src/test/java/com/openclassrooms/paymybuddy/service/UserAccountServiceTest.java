@@ -1,8 +1,13 @@
 package com.openclassrooms.paymybuddy.service;
 
+import com.openclassrooms.paymybuddy.dto.BankDto;
 import com.openclassrooms.paymybuddy.dto.ContactDto;
+import com.openclassrooms.paymybuddy.dto.TransferMoneyDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
+import com.openclassrooms.paymybuddy.exception.UsernameAlreadyExistException;
+import com.openclassrooms.paymybuddy.model.Transaction;
 import com.openclassrooms.paymybuddy.model.UserAccount;
+import com.openclassrooms.paymybuddy.repository.TransactionRepository;
 import com.openclassrooms.paymybuddy.repository.UserAccountRepository;
 import com.openclassrooms.paymybuddy.service.impl.UserAccountServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,9 +35,10 @@ import static org.mockito.Mockito.*;
 public class UserAccountServiceTest {
     @InjectMocks
     private UserAccountServiceImpl userAccountService;
-
     @Mock
     private UserAccountRepository userAccountRepository;
+    @Mock
+    private TransactionRepository transactionRepository;
 
     @Test
     public void saveUserAccountTest() {
@@ -43,9 +50,7 @@ public class UserAccountServiceTest {
         userAccountCreationDto.setBank("test");
         userAccountCreationDto.setPassword("test");
 
-        UserAccount expectedUser = new UserAccount(userAccountCreationDto);
-
-        UserAccount userAccount = new UserAccount(userAccountCreationDto);
+        UserAccount expectedUser = new UserAccount(userAccountCreationDto, new BCryptPasswordEncoder());
 
         when(userAccountRepository.save(any(UserAccount.class))).thenReturn(expectedUser);
 
@@ -54,6 +59,16 @@ public class UserAccountServiceTest {
 
         //THEN the method to save in the repository is called
         verify(userAccountRepository, times(1)).save(any(UserAccount.class));
+    }
+
+    @Test
+    public void saveUserAccountWhenUserAlreadyExistTest(){
+        //GIVEN the user we would save already exist
+        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(new UserAccount()));
+        UserAccountCreationDto userAccountCreationDto = new UserAccountCreationDto("test", "test", "test", "test", "test");
+
+        //WHEN we would save the user THEN an exception is thrown
+        assertThrows(UsernameAlreadyExistException.class, () -> userAccountService.saveUserAccount(userAccountCreationDto));
     }
 
     @Test
@@ -95,36 +110,127 @@ public class UserAccountServiceTest {
 
     @Test
     public void addContact() {
-        UserAccount userAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.valueOf(0), new ArrayList<>());
-        UserAccount contact = new UserAccount(2, "contact", "contact", "contact", "contact", "contact", BigDecimal.valueOf(0), null);
-        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(contact));
-        when(userAccountRepository.findByEmail(userAccount.getEmail())).thenReturn(Optional.of(userAccount));
+        //GIVEN there is an account and a contact to add
+        UserAccount contact = new UserAccount(1, "contact", "contact", "contact", "contact", "contact", BigDecimal.ONE, null);
+        UserAccount userAccount = new UserAccount(2, "test", "test", "test", "test", "test", BigDecimal.ONE, new ArrayList<>());
+        ContactDto contactDto = new ContactDto("contact", "contact");
+        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(userAccount));
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.of(contact));
+        when(userAccountRepository.save(any(UserAccount.class))).thenReturn(userAccount);
 
-        userAccount.getContactList().add(contact);
+        //WHEN we add the contact the the contact list of the user
+        userAccountService.addContact(contactDto, "test");
 
-        when(userAccountRepository.save(userAccount)).thenReturn(userAccount);
-
-        userAccountService.addContact(contact, "test");
-
-        verify(userAccountRepository, times(1)).save(any(UserAccount.class));
+        //THEN the user is saved with the new contact
+        verify(userAccountRepository, times(1)).save(userAccount);
     }
 
     @Test
     public void addContactWhenContactIsNotFoundTest(){
         //GIVEN the contact is not found
-        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+        ContactDto contactDto = new ContactDto("contact", "contact");
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userAccountService.addContact(new UserAccount(), "test"));
+        //WHEN the method is called then an exception is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.addContact(contactDto, "test"));
     }
 
     @Test
     public void addContactWhenUserIsNotFoundTest(){
         //GIVEN the user is not found
-        UserAccount userAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.valueOf(0), new ArrayList<>());
-        UserAccount contact = new UserAccount(2, "contact", "contact", "contact", "contact", "contact", BigDecimal.valueOf(0), null);
-        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(contact));
+        ContactDto contactDto = new ContactDto("contact", "contact");
+        UserAccount userAccount = new UserAccount(1, "contact", "contact", "contact", "contact", "contact",BigDecimal.ONE, null);
+        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(userAccount));
         when(userAccountRepository.findByEmail(userAccount.getEmail())).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userAccountService.addContact(new UserAccount(), "test"));
+        //WHEN the method is called then an exception is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.addContact(contactDto, "test"));
+    }
+
+    @Test
+    public void getBalanceTest(){
+        //GIVEN we would get the balance of a user
+        UserAccount userAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.ONE, null);
+        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(userAccount));
+
+        //WHEN we call the method to get the balance
+        BigDecimal actualBalance = userAccountService.getBalance("test");
+
+        //THEN we get the correct balance
+        assertEquals(BigDecimal.ONE, actualBalance);
+    }
+
+    @Test
+    public void getBalanceWhenUserIsNotFoundTest(){
+        //GIVEN the user we would get the balance doesn't exist
+        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        //WHEN we call the method THEN an error is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.getBalance("test"));
+    }
+
+    @Test
+    public void bankTransferTest(){
+        //GIVEN we would transfer money from bank
+        UserAccount userAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.ZERO, null);
+        UserAccount expectedUserAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.valueOf(100), null);
+        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(userAccount));
+        BankDto bankDto = new BankDto(BigDecimal.valueOf(100));
+        when(userAccountRepository.save(expectedUserAccount)).thenReturn(expectedUserAccount);
+
+        //WHEN we would credit the balance
+        userAccountService.bankTransfer(bankDto, "test");
+
+        //THEN the updated user account is saved
+        verify(userAccountRepository, times(1)).save(expectedUserAccount);
+    }
+
+    @Test
+    public void bankTransferWhenUserIsNotFoundTest(){
+        //GIVEN the user won't be found
+        when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        //WHEN the method is called THEN an error is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.bankTransfer(new BankDto(), "test"));
+    }
+
+    @Test
+    public void transferMoneyTest(){
+        //GIVEN the user is able to transfer money
+        TransferMoneyDto transferMoneyDto = new TransferMoneyDto("contact", BigDecimal.valueOf(50), null);
+        UserAccount contact = new UserAccount(1, "contact", "contact", "contact", "contact", "contact", BigDecimal.ZERO, null);
+        UserAccount userAccount = new UserAccount(2, "test", "test", "test", "test", "test", BigDecimal.valueOf(100), null);
+        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(userAccount));
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.of(contact));
+        Transaction expectedTransaction = new Transaction(transferMoneyDto, userAccount, contact);
+
+        //WHEN we make the transfer
+        userAccountService.transferMoney(transferMoneyDto, "test");
+
+        //THEN the user, the contact and the transaction are saved
+        verify(userAccountRepository, times(2)).save(any(UserAccount.class));
+        verify(transactionRepository, times(1)).save(expectedTransaction);
+    }
+
+    @Test
+    public void transferMoneyWhenDebtorIsNotFoundTest(){
+        //GIVEN the debtor is not found
+        TransferMoneyDto transferMoneyDto = new TransferMoneyDto("contact", BigDecimal.valueOf(50), null);
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.empty());
+
+        //WHEN the method is called THEN an exception is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.transferMoney(transferMoneyDto, "test"));
+    }
+
+    @Test
+    public void transferMoneyWhenCreditorIsNotFoundTest(){
+        //GIVEN the creditor is not found
+        TransferMoneyDto transferMoneyDto = new TransferMoneyDto("contact", BigDecimal.valueOf(50), null);
+        UserAccount contact = new UserAccount(1, "contact", "contact", "contact", "contact", "contact", BigDecimal.ZERO, null);
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.of(contact));
+        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.empty());
+
+        //WHEN the method is called THEN an exception is thrown
+        assertThrows(UsernameNotFoundException.class, () -> userAccountService.transferMoney(transferMoneyDto, "test"));
     }
 }
