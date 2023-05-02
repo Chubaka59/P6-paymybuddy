@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -197,17 +195,30 @@ public class UserAccountServiceTest {
     @Test
     public void transferMoneyTest(){
         //GIVEN the user is able to transfer money
-        TransferMoneyDto transferMoneyDto = new TransferMoneyDto("contact", BigDecimal.valueOf(50), null);
-        UserAccount contact = new UserAccount(1, "contact", "contact", "contact", "contact", "contact", BigDecimal.ZERO, null);
-        UserAccount userAccount = new UserAccount(2, "test", "test", "test", "test", "test", BigDecimal.valueOf(100), null);
-        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(userAccount));
-        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.of(contact));
-        Transaction expectedTransaction = new Transaction(transferMoneyDto, userAccount, contact);
+        TransferMoneyDto transferMoneyDto = new TransferMoneyDto("contact", BigDecimal.valueOf(75), null);
+        UserAccount debtor = new UserAccount(1, "contact", "contact", "contact", "contact", "contact", BigDecimal.ZERO, null);
+        UserAccount creditor = new UserAccount(2, "test", "test", "test", "test", "test", BigDecimal.valueOf(100), null);
+        Transaction expectedTransaction = new Transaction(transferMoneyDto, creditor, debtor);
+
+
+        when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(creditor));
+        when(userAccountRepository.findByEmail("contact")).thenReturn(Optional.of(debtor));
+        when(userAccountRepository.save(any(UserAccount.class))).thenAnswer(a -> a.getArguments()[0]);
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(a -> a.getArguments()[0]);
+
 
         //WHEN we make the transfer
-        userAccountService.transferMoney(transferMoneyDto, "test");
+        Transaction response = userAccountService.transferMoney(transferMoneyDto, "test");
 
         //THEN the user, the contact and the transaction are saved
+        assertThat(response)
+                .satisfies(r -> {
+                    assertThat(response.getCreditor().getId()).isEqualTo(creditor.getId());
+                    assertThat(response.getCreditor().getBalance()).isEqualTo(BigDecimal.valueOf(100).subtract(transferMoneyDto.getAmountWithFee()));
+
+                    assertThat(response.getDebtor().getId()).isEqualTo(debtor.getId());
+                    assertThat(response.getDebtor().getBalance()).isEqualTo(transferMoneyDto.getAmount());
+                });
         verify(userAccountRepository, times(2)).save(any(UserAccount.class));
         verify(transactionRepository, times(1)).save(expectedTransaction);
     }

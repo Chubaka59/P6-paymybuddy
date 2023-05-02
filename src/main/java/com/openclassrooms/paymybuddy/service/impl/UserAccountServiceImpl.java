@@ -81,17 +81,19 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     @Transactional
     public Transaction transferMoney(TransferMoneyDto transferMoneyDto, String email) {
+        // Find debtor account and debit transaction amount without fees ( getAmount() )
         final UserAccount debtor = findUserByEmail(transferMoneyDto.getContactEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Contact not found with email : "+ transferMoneyDto.getContactEmail()))
                 .creditBalance(transferMoneyDto.getAmount());
+        userAccountRepository.save(debtor);
+
+        // Find creditor account and credit transaction amount with fees ( getOriginalAmount() )
         final UserAccount creditor = findUserByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found with email : " + email))
                 .debitBalance(transferMoneyDto.getAmount());
 
         Transaction transaction = new Transaction(transferMoneyDto, creditor, debtor);
 
-        userAccountRepository.save(creditor);
-        userAccountRepository.save(debtor);
         return transactionRepository.save(transaction);
     }
 }

@@ -81,13 +81,10 @@ public class UserAccount {
             throw new RuntimeException("Amount can not be equal less then 0");
         }
 
-        //calculate transfer fee of 0.5% = ( amount * 0.5 / 100)
-        BigDecimal fee = amount.multiply(BigDecimal.valueOf(0.005));
-
-        if(balance.compareTo(amount.add(fee)) < 0 ) {
+        if(balance.compareTo(amount) < 0 ) {
             throw new RuntimeException("The balance is insufficient");
         }
-        balance = balance.subtract(amount.add(fee));
+        balance = balance.subtract(amount);
 
         return this;
     }

@@ -21,7 +21,12 @@ public class TransferMoneyDto {
     @NotNull
     @Digits(integer = 3, fraction = 2)
     @DecimalMin(value = "0.0", inclusive = false, message = "Amount can not be equal less then 0")
-    BigDecimal amount;
+    BigDecimal amount = BigDecimal.ZERO;
 
     String description;
+
+    public BigDecimal getAmountWithFee(){
+        final BigDecimal fee = amount.multiply(BigDecimal.valueOf(0.005));
+        return amount.add(fee);
+    }
 }

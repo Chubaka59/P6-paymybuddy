@@ -44,7 +44,7 @@ public class TransactionServiceTest {
         //GIVEN there is transaction to find
         UserAccount existingUser = new UserAccount(1, "test", "test", null, null, null, null, null);
         when(userAccountRepository.findByEmail(anyString())).thenReturn(Optional.of(existingUser));
-        Transaction transaction = new Transaction(1, LocalDate.now(), BigDecimal.ONE, null, existingUser, new UserAccount());
+        Transaction transaction = new Transaction(1, LocalDate.now(), amountWithFee(BigDecimal.ONE), BigDecimal.ONE, null, existingUser, new UserAccount());
         when(transactionRepository.findAllByDebtorOrCreditorOrderByDateDesc(existingUser, existingUser)).thenReturn(List.of(transaction));
 
         List<TransactionDto> expectedTransactionDtoList = List.of(new TransactionDto(transaction));
@@ -71,7 +71,7 @@ public class TransactionServiceTest {
         int currentPage = 1;
         int pageSize = 5;
         UserAccount userAccount = new UserAccount(1, "test", "test", "test", "test", "test", BigDecimal.ONE, null);
-        Transaction transaction = new Transaction(1, LocalDate.now(), BigDecimal.ONE, "test", new UserAccount(), new UserAccount());
+        Transaction transaction = new Transaction(1, LocalDate.now(), amountWithFee(BigDecimal.ONE), BigDecimal.ONE, "test", new UserAccount(), new UserAccount());
         when(userAccountRepository.findByEmail("test")).thenReturn(Optional.of(userAccount));
         when(transactionRepository.findAllByDebtorOrCreditorOrderByDateDesc(userAccount, userAccount)).thenReturn(List.of(transaction));
         TransactionDto transactionDto = new TransactionDto(transaction);
@@ -93,7 +93,7 @@ public class TransactionServiceTest {
         List<Transaction> transactionList = new ArrayList<>();
         List<TransactionDto> transactionDtoList = new ArrayList<>();
         for(int i=0; i<10; i++ ){
-            Transaction transaction = new Transaction(i, LocalDate.now(), BigDecimal.ONE, "test", new UserAccount(), new UserAccount());
+            Transaction transaction = new Transaction(i, LocalDate.now(), amountWithFee(BigDecimal.ONE), BigDecimal.ONE, "test", new UserAccount(), new UserAccount());
             transactionList.add(transaction);
             transactionDtoList.add(new TransactionDto(transaction));
         }
@@ -106,5 +106,9 @@ public class TransactionServiceTest {
 
         //THEN we get the correct return
         assertEquals(expectedTransactionDtoPage, actualTransactionDtoPage);
+    }
+
+    private BigDecimal amountWithFee(BigDecimal amount){
+        return amount.multiply(BigDecimal.valueOf(0.005));
     }
 }
