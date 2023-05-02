@@ -60,14 +60,6 @@ public class UserAccount {
         this.setPassword(passwordEncoder.encode(userAccountCreationDto.getPassword()));
     }
 
-    public void reload(BankDto bankDto){
-       balance = balance.add(bankDto.getAmount()).setScale(2);
-    }
-
-    public void updateBalance(BigDecimal amount){
-        setBalance(balance.add(amount));
-    }
-
     public UserAccount creditBalance(BigDecimal amount){
         if (balance.add(amount).compareTo(BigDecimal.ZERO) < 0){
             throw new RuntimeException("The balance is insufficient");
@@ -90,6 +82,9 @@ public class UserAccount {
     }
 
     public UserAccount addContact(UserAccount userAccount){
+        if (contactList.contains(userAccount)) {
+            throw new RuntimeException(userAccount.getEmail() + " is already in your contact");
+        }
         contactList.add(userAccount);
         return this;
     }
