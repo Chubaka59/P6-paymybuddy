@@ -90,7 +90,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         // Find creditor account and credit transaction amount with fees ( getOriginalAmount() )
         final UserAccount creditor = findUserByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found with email : " + email))
-                .debitBalance(transferMoneyDto.getAmount());
+                .debitBalance(transferMoneyDto.getAmountWithFee());
+
+        userAccountRepository.save(creditor);
 
         Transaction transaction = new Transaction(transferMoneyDto, creditor, debtor);
 

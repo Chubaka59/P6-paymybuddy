@@ -36,7 +36,6 @@ public class Transaction {
         if(transferMoneyDto.getAmountWithFee().compareTo(BigDecimal.ZERO) <= 0 ){
             throw new RuntimeException("Amount can not be equal less then 0");
         }
-
         date = LocalDate.now();
         amount = transferMoneyDto.getAmountWithFee();
         originalAmount = transferMoneyDto.getAmount();
