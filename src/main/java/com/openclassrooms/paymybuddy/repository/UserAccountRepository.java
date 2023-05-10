@@ -9,5 +9,10 @@ import java.util.Optional;
 
 @Repository
 public interface UserAccountRepository extends CrudRepository<UserAccount, Integer> {
+    /**
+     * find a user from its email
+     * @param email the email of the user
+     * @return an optional of a UserAccount
+     */
     Optional<UserAccount> findByEmail(String email);
 }

@@ -10,8 +10,11 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Integer>, PagingAndSortingRepository<Transaction, Integer> {
+    /**
+     * find a list of transaction from the specified users
+     * @param debtor the user to find the transaction
+     * @param creditor the user to find the transaction
+     * @return a list of transaction
+     */
     List<Transaction> findAllByDebtorOrCreditorOrderByDateDesc(UserAccount debtor, UserAccount creditor);
-
-//    @Query("select t from Transaction t where t.creditor = :user or t.debtor = :user order by t.date desc")
-//    List<Transaction> findAllUserTransactions(@Param("user") UserAccount user);
 }
