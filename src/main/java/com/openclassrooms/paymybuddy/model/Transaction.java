@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     private LocalDate date;
 
@@ -36,10 +36,10 @@ public class Transaction {
         if(transferMoneyDto.getAmountWithFee().compareTo(BigDecimal.ZERO) <= 0 ){
             throw new RuntimeException("Amount can not be equal less then 0");
         }
-        date = LocalDate.now();
-        amount = transferMoneyDto.getAmountWithFee();
-        originalAmount = transferMoneyDto.getAmount();
-        description = transferMoneyDto.getDescription();
+        this.date = LocalDate.now();
+        this.amount = transferMoneyDto.getAmountWithFee();
+        this.originalAmount = transferMoneyDto.getAmount();
+        this.description = transferMoneyDto.getDescription();
         this.creditor = creditor;
         this.debtor= debtor;
     }

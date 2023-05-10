@@ -22,7 +22,7 @@ public class UserAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(nullable = false)
     private String firstName;
@@ -46,6 +46,7 @@ public class UserAccount {
             cascade = CascadeType.PERSIST
     )
     private List<UserAccount> contactList = new ArrayList<>();
+
 
     public String getFullName() {
         return this.firstName + " " + this.lastName;

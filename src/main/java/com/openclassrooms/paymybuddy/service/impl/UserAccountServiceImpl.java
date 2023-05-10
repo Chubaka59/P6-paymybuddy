@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+@Transactional
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
     @Autowired
@@ -79,7 +80,6 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    @Transactional
     public Transaction transferMoney(TransferMoneyDto transferMoneyDto, String email) {
         // Find debtor account and debit transaction amount without fees ( getAmount() )
         final UserAccount debtor = findUserByEmail(transferMoneyDto.getContactEmail())
