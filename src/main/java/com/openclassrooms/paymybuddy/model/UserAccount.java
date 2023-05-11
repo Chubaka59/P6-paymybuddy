@@ -1,12 +1,10 @@
 package com.openclassrooms.paymybuddy.model;
 
-import com.openclassrooms.paymybuddy.dto.BankDto;
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;

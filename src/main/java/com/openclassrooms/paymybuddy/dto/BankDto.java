@@ -13,6 +13,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class BankDto {
     @NotNull
-    @Digits(integer = 3, fraction = 2)
+    @Digits(integer = 4, fraction = 2)
     BigDecimal amount;
 }
