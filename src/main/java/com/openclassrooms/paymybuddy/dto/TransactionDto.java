@@ -1,6 +1,8 @@
 package com.openclassrooms.paymybuddy.dto;
 
 import com.openclassrooms.paymybuddy.model.Transaction;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,6 +16,7 @@ public class TransactionDto {
 
     private BigDecimal amount;
 
+    @Size(max = 300)
     private String description;
 
     private String creditor;

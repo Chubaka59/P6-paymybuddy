@@ -2,6 +2,8 @@ package com.openclassrooms.paymybuddy.model;
 
 import com.openclassrooms.paymybuddy.dto.UserAccountCreationDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,18 +25,22 @@ public class UserAccount {
     private Integer id;
 
     @Column(nullable = false)
+    @Size(max = 30)
     private String firstName;
 
     @Column(nullable = false)
+    @Size(max = 30)
     private String lastName;
 
     @Column(nullable = false)
+    @Size(max = 100)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
+    @Size(max = 20)
     private String bank;
 
     private BigDecimal balance = BigDecimal.valueOf(0);
