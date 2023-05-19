@@ -34,3 +34,11 @@ The app has unit tests and integration tests written.
 To run the tests from maven, go to the folder that contains the pom.xml file and execute the below command.
 
 `mvn site`
+
+### Class diagram
+
+![Diagramme de classe drawio](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/d6395c8f-2965-4b04-8cd5-1930be0ac375)
+
+### Database modeling scheme
+
+![Schema de modelisation de base de données drawio](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/554a899f-995a-4945-a1e8-93c3558b5d38)
