@@ -27,6 +27,14 @@ https://maven.apache.org/install.html
 
 https://www.mysql.com/downloads/
 
+4.Set environment variables
+
+To run the program, it must be start with the following environment variables
+
+SPRING_DATASOURCE_URL (mysql database)
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+
 ### Testing
 
 The app has unit tests and integration tests written.
@@ -37,8 +45,8 @@ To run the tests from maven, go to the folder that contains the pom.xml file and
 
 ### Class diagram
 
-![Diagramme de classe drawio](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/d6395c8f-2965-4b04-8cd5-1930be0ac375)
+![Lefebvre_Joffrey_uml_04_2023](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/89ae089c-c383-422d-8c29-1ccbbcae3f16)
 
 ### Database modeling scheme
 
-![Schema de modelisation de base de données drawio](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/554a899f-995a-4945-a1e8-93c3558b5d38)
+![Lefebvre_Joffrey_mpd_04_2023](https://github.com/Chubaka59/P6-paymybuddy/assets/119501964/1b5ca28b-b2c4-4ab8-ab9a-705a82d3cabe)
